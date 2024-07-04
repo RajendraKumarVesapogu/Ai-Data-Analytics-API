@@ -52,7 +52,7 @@ This assignment/project is a Django-based REST API for game analytics. It allows
 The API should now be accessible at `http://localhost:8000/`.
 
 ## Project Structure
-
+```
 game_analytics_api/  # Main Django app
 ├── game_analytics/
     ├── migrations/
@@ -80,7 +80,7 @@ requirements.txt
 Dockerfile
 docker-compose.yml
 README.md
-
+```
 ## API Endpoints
 
 ### 1. CSV Upload
