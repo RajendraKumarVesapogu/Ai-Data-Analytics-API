@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "intern-assignment"
+version = "0.1.0"
+description = ""
+authors = ["RajendraKumarVesapogu"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^5.0.6"
+requests = "^2.32.3"
+djangorestframework-simplejwt = "^5.3.1"
+django-cors-headers = "^4.4.0"
+poetry = "^1.8.3"
+clickhouse-connect = "^0.7.15"
+pandas = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
