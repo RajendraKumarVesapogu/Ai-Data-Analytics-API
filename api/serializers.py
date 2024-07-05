@@ -7,3 +7,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email']
 
+class GameDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameData
+        fields = '__all__'

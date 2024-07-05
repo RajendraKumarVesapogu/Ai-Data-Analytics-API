@@ -8,5 +8,7 @@ urlpatterns = [
     path("register/",views.register, name="register"),
     path("user/",views.get_user, name="user"),
     path("test_token/",views.test_token, name="test_token"),
+    
+    path("upload/", views.csv_upload, name="upload")
 ]
 
