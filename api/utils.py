@@ -1,29 +1,17 @@
 import requests
-from .models import GameData
 import pandas as pd
 from io import StringIO
-from django.db.models import Q, Avg, Max, Min, Sum, Count
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .models import GameData
-from .serializers import GameDataSerializer
-from django.db.models.fields import CharField, TextField, IntegerField, FloatField, DecimalField, DateField, BooleanField
 
 from django.db.models import Q, Avg, Max, Min, Sum, Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
 from .models import GameData
 from .serializers import GameDataSerializer
-from django.db.models.fields import CharField, TextField, IntegerField, FloatField, DecimalField, DateField, BooleanField
 
-from django.db.models import Q, Avg, Max, Min, Sum, Count
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .models import GameData
-from .serializers import GameDataSerializer
-from django.db.models.fields import CharField, TextField, IntegerField, FloatField, DecimalField, DateField, BooleanField
+# --------------------------------- Utility Functions ---------------------------------
 
-def getSearchResults(field, operator, value):
+def get_search_results(field, operator, value):
     try:
         if not hasattr(GameData, field):
             return None
@@ -43,12 +31,13 @@ def getSearchResults(field, operator, value):
         serializer = GameDataSerializer(queryset, many=True)
         return serializer.data
     except Exception as e:
-        return e
+        return str(e)
 
-def getAggregateResults(field):
+def get_aggregate_results(field):
     try:
         if GameData._meta.get_field(field).get_internal_type() not in ['IntegerField', 'FloatField', 'DecimalField']:
             return None
+
         return {
             'avg': GameData.objects.aggregate(avg=Avg(field))['avg'],
             'max': GameData.objects.aggregate(max=Max(field))['max'],
@@ -57,9 +46,9 @@ def getAggregateResults(field):
             'count': GameData.objects.aggregate(count=Count(field))['count']
         }
     except Exception as e:
-        return e
+        return str(e)
 
-def getConstrainedAggregateResults(field, operator, value):
+def get_constrained_aggregate_results(field, operator, value):
     try:
         filter_expr = get_filter_expression(field, operator, value)
         queryset = GameData.objects.filter(filter_expr)
@@ -71,47 +60,47 @@ def getConstrainedAggregateResults(field, operator, value):
             'count': queryset.aggregate(count=Count(field))['count']
         }
     except Exception as e:
-        return e
+        return str(e)
 
 def get_filter_expression(field, operator, value):
-    if operator == '=':
-        return Q(**{field: value})
-    elif operator == '>':
-        return Q(**{f'{field}__gt': value})
-    elif operator == '>=':
-        return Q(**{f'{field}__gte': value})
-    elif operator == '<':
-        return Q(**{f'{field}__lt': value})
-    elif operator == '<=':
-        return Q(**{f'{field}__lte': value})
+    operators = {
+        '=': f'{field}',
+        '>': f'{field}__gt',
+        '>=': f'{field}__gte',
+        '<': f'{field}__lt',
+        '<=': f'{field}__lte'
+    }
+
+    if operator in operators:
+        return Q(**{operators[operator]: value})
     else:
         raise ValueError(f"Unsupported operator: {operator}")
 
+def to_date_field(date):
+    month_map = {
+        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+        'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+    }
 
-def toDateField(date):
-    
-    month_map = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}
-    
-    if date == '':
+    if not date:
         return None
-    else:
-        try: 
-            split_date = date.replace(',', '').split(' ')     
-            return split_date[2] + '-' + month_map[split_date[0]] + '-' + split_date[1]
-        except Exception as e:
-            return split_date[1] + '-' + month_map[split_date[0]] + '-' +"01"
-def getCsvFromUrl(url):
+
+    try:
+        split_date = date.replace(',', '').split(' ')
+        return f"{split_date[2]}-{month_map[split_date[0]]}-{split_date[1]}"
+    except Exception:
+        return f"{split_date[1]}-{month_map[split_date[0]]}-01"
+
+def get_csv_from_url(url):
     response = requests.get(url)
-    if response.status_code == 200:
-        return response.text
-    else:
+    return response.text if response.status_code == 200 else None
+
+def save_to_database(url):
+    csv_data = get_csv_from_url(url)
+    if not csv_data:
         return None
-    
-def saveToDatabase(url):
-    
-    csvdata = getCsvFromUrl(url)
-    
-    data = pd.read_csv(StringIO(csvdata))
+
+    data = pd.read_csv(StringIO(csv_data))
     
     column_mapping = {
         'AppID': 'AppID',
@@ -134,14 +123,16 @@ def saveToDatabase(url):
         'Genres': 'Genres',
         'Tags': 'Tags'
     }
+    
     data.rename(columns=column_mapping, inplace=True)
     GameData.objects.all().delete()
+    
     try:
-        for index, row in data.iterrows():
+        for _, row in data.iterrows():
             game_data = GameData(
                 AppID=row['AppID'],
                 Name=row['Name'],
-                Release_date=toDateField(row['Release_date']),
+                Release_date=to_date_field(row['Release_date']),
                 Required_age=row['Required_age'],
                 Price=row['Price'],
                 DLC_count=row['DLC_count'],
@@ -160,6 +151,6 @@ def saveToDatabase(url):
                 Tags=row['Tags'],
             )
             game_data.save()
-        return column_mapping.values()
+        return list(column_mapping.values())
     except Exception as e:
-        return e
+        return str(e)
