@@ -111,3 +111,180 @@ Example:
 
 This endpoint allows for flexible and powerful querying of the `GameData` model, making it easy to filter and aggregate data based on various criteria.
 ```
+
+
+
+
+
+
+```
+Certainly! I'll provide a comprehensive documentation for the Game Data Analytics API. This documentation will cover how to use the API, including examples of different query types and the expected responses.
+
+# Game Data Analytics API Documentation
+
+## Base URL
+
+```
+http://localhost:8000/api/
+```
+
+## Endpoints
+
+### 1. Query Game Data
+
+Endpoint: `/query/`
+Method: GET
+
+This endpoint allows you to query the game data based on various parameters. It supports different types of fields and operations.
+
+#### Query Parameters
+
+You can use any field from the GameData model as a query parameter. The behavior of the query depends on the field type:
+
+- Numeric Fields (Integer, Float, Decimal):
+  - Supports exact match, greater than, and less than operations.
+  - Example: `AppID=100`, `Price>10`, `Required_age<18`
+
+- String Fields (Char, Text):
+  - Supports case-insensitive substring matching.
+  - Example: `Name=strategy`, `Developers=valve`
+
+- Date Fields:
+  - Supports exact date matching.
+  - Format: YYYY-MM-DD
+  - Example: `Release_date=2022-01-01`
+
+- Boolean Fields:
+  - Accepts 'true' or 'false' (case-insensitive).
+  - Example: `Windows=true`, `Mac=false`
+
+#### Response Format
+
+The API responds with a JSON object containing two main sections:
+
+1. `results`: An array of game data objects matching the query.
+2. `aggregate_results`: (For numeric fields only) An object containing aggregate statistics.
+
+#### Examples
+
+1. Query by name (substring match):
+   ```
+   GET /api/query/?Name=strategy
+   ```
+
+2. Query by price (greater than operation):
+   ```
+   GET /api/query/?Price>20
+   ```
+
+3. Query by release date:
+   ```
+   GET /api/query/?Release_date=2022-01-01
+   ```
+
+4. Query by multiple parameters:
+   ```
+   GET /api/query/?Developers=valve&Price<50&Windows=true
+   ```
+
+#### Sample Response
+
+```json
+{
+  "results": [
+    {
+      "AppID": 570,
+      "Name": "Dota 2",
+      "Release_date": "2013-07-09",
+      "Required_age": 0,
+      "Price": 0.00,
+      "DLC_count": 0,
+      "About_the_game": "...",
+      "Supported_languages": "...",
+      "Windows": true,
+      "Mac": true,
+      "Linux": true,
+      "Positive": 1371793,
+      "Negative": 223107,
+      "Score_rank": "...",
+      "Developers": "Valve",
+      "Publishers": "Valve",
+      "Categories": "...",
+      "Genres": "...",
+      "Tags": "..."
+    },
+    // ... more results
+  ],
+  "aggregate_results": {
+    "Price": {
+      "avg": 14.99,
+      "max": 59.99,
+      "min": 0.00,
+      "sum": 149900.00,
+      "count": 10000
+    }
+  }
+}
+```
+
+### 2. Get Columns
+
+Endpoint: `/columns/`
+Method: GET
+
+This endpoint returns a list of all available columns in the GameData model.
+
+#### Response Format
+
+An array of column names.
+
+#### Example
+
+```
+GET /api/columns/
+```
+
+Sample Response:
+```json
+[
+  "AppID",
+  "Name",
+  "Release_date",
+  "Required_age",
+  "Price",
+  "DLC_count",
+  "About_the_game",
+  "Supported_languages",
+  "Windows",
+  "Mac",
+  "Linux",
+  "Positive",
+  "Negative",
+  "Score_rank",
+  "Developers",
+  "Publishers",
+  "Categories",
+  "Genres",
+  "Tags"
+]
+```
+
+## Error Handling
+
+The API will return appropriate HTTP status codes for different scenarios:
+
+- 200 OK: Successful request
+- 400 Bad Request: Invalid query parameters
+- 404 Not Found: Resource not found
+- 500 Internal Server Error: Server-side error
+
+Error responses will include a JSON object with an `error` key describing the issue.
+
+## Notes
+
+- All queries are case-insensitive for string fields.
+- Numeric comparisons (>, <, =) are only available for numeric fields.
+- Aggregate results are only provided for numeric fields.
+- The API does not support pagination by default. For large datasets, consider implementing pagination to improve performance.
+
+This documentation provides a comprehensive guide on how to use the Game Data Analytics API. It covers the available endpoints, query parameters, response formats, and includes examples for different types of queries. Users can refer to this documentation to understand how to effectively query and analyze the game data using the API.

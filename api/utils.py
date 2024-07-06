@@ -2,6 +2,96 @@ import requests
 from .models import GameData
 import pandas as pd
 from io import StringIO
+from django.db.models import Q, Avg, Max, Min, Sum, Count
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import GameData
+from .serializers import GameDataSerializer
+from django.db.models.fields import CharField, TextField, IntegerField, FloatField, DecimalField, DateField, BooleanField
+
+from django.db.models import Q, Avg, Max, Min, Sum, Count
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import GameData
+from .serializers import GameDataSerializer
+from django.db.models.fields import CharField, TextField, IntegerField, FloatField, DecimalField, DateField, BooleanField
+
+from django.db.models import Q, Avg, Max, Min, Sum, Count
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import GameData
+from .serializers import GameDataSerializer
+from django.db.models.fields import CharField, TextField, IntegerField, FloatField, DecimalField, DateField, BooleanField
+
+def getAggregateResults(field):
+    if not hasattr(GameData, field):
+        return None
+
+    field_type = GameData._meta.get_field(field).get_internal_type()
+    if field_type not in ['IntegerField', 'FloatField', 'DecimalField']:
+        return None
+
+    return {
+        'avg': GameData.objects.aggregate(avg=Avg(field))['avg'],
+        'max': GameData.objects.aggregate(max=Max(field))['max'],
+        'min': GameData.objects.aggregate(min=Min(field))['min'],
+        'sum': GameData.objects.aggregate(sum=Sum(field))['sum'],
+        'count': GameData.objects.aggregate(count=Count(field))['count']
+    }
+
+def getConstrainedAggregateResults(field, operator, value):
+    if not hasattr(GameData, field):
+        return None
+
+    field_type = GameData._meta.get_field(field).get_internal_type()
+    if field_type not in ['IntegerField', 'FloatField', 'DecimalField']:
+        return None
+
+    filter_expr = get_filter_expression(field, operator, value)
+    queryset = GameData.objects.filter(filter_expr)
+
+    return {
+        'avg': queryset.aggregate(avg=Avg(field))['avg'],
+        'max': queryset.aggregate(max=Max(field))['max'],
+        'min': queryset.aggregate(min=Min(field))['min'],
+        'sum': queryset.aggregate(sum=Sum(field))['sum'],
+        'count': queryset.aggregate(count=Count(field))['count']
+    }
+
+def get_filter_expression(field, operator, value):
+    if operator == '=':
+        return Q(**{field: value})
+    elif operator == '>':
+        return Q(**{f'{field}__gt': value})
+    elif operator == '>=':
+        return Q(**{f'{field}__gte': value})
+    elif operator == '<':
+        return Q(**{f'{field}__lt': value})
+    elif operator == '<=':
+        return Q(**{f'{field}__lte': value})
+    else:
+        raise ValueError(f"Unsupported operator: {operator}")
+
+def getSearchResults(field, operator, value):
+    if not hasattr(GameData, field):
+        return None
+
+    field_type = GameData._meta.get_field(field).get_internal_type()
+    
+    if field_type in ['IntegerField', 'FloatField', 'DecimalField', 'DateField']:
+        filter_expr = get_filter_expression(field, operator, value)
+        queryset = GameData.objects.filter(filter_expr)
+    elif field_type in ['CharField', 'TextField']:
+        queryset = GameData.objects.filter(**{f'{field}__icontains': value})
+    elif field_type == 'BooleanField':
+        queryset = GameData.objects.filter(**{field: value.lower() == 'true'})
+    else:
+        return None
+
+    serializer = GameDataSerializer(queryset, many=True)
+    return serializer.data
+
+
 def toDateField(date):
     
     month_map = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}

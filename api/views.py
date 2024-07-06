@@ -29,7 +29,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponseBadRequest
 
-from .utils import saveToDatabase, getCsvFromUrl
+from .utils import saveToDatabase, getAggregateResults, getConstrainedAggregateResults, getSearchResults
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -121,21 +121,41 @@ def csv_upload(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
         
-        
+# --------------------------------- Game Data ---------------------------------
+
 class GameDataQueryView(APIView):
     def get(self, request, *args, **kwargs):
         query_params = request.query_params
-        filters = Q()
-
-        for field, value in query_params.items():
-            if hasattr(GameData, field):
-                if field in ['AppID', 'Required_age', 'Price', 'DLC_count', 'Positive', 'Negative']:
-                    filters &= Q(**{f"{field}": value})
-                elif field in ['Release_date']:
-                    filters &= Q(**{f"{field}": value})
-                else:
-                    filters &= Q(**{f"{field}__icontains": value})
-
-        queryset = GameData.objects.filter(filters)
-        serializer = GameDataSerializer(queryset, many=True)
-        return Response(serializer.data)
+        
+        if not query_params:
+            return Response({'error': 'No query parameters provided'}, status=400)
+        
+        field = query_params.get('field')
+        value = query_params.get('value')
+        operator = query_params.get('operator', '=')  # Default to '=' if not provided
+        
+        if not field or value is None:
+            return Response({'error': 'Both field and value are required'}, status=400)
+        
+        if not hasattr(GameData, field):
+            return Response({'error': f'Invalid field: {field}'}, status=400)
+        
+        try:
+            # Get search results
+            search_results = getSearchResults(field, operator, value)
+            
+            # Get aggregate results
+            aggregate_results = getAggregateResults(field)
+            
+            # Get constrained aggregate results if applicable
+            constrained_aggregate_results = None
+            if GameData._meta.get_field(field).get_internal_type() in ['IntegerField', 'FloatField', 'DecimalField']:
+                constrained_aggregate_results = getConstrainedAggregateResults(field, operator, value)
+            
+            return Response({
+                'search_results': search_results,
+                'aggregate_results': aggregate_results,
+                'constrained_aggregate_results': constrained_aggregate_results
+            })
+        except ValueError as e:
+            return Response({'error': str(e)}, status=400)
