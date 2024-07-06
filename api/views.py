@@ -106,6 +106,8 @@ def upload_csv(request):
 # --------------------------------- Game Data ---------------------------------
 
 class GameDataQueryView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @staticmethod
     def _get_system_message():
@@ -135,8 +137,9 @@ class GameDataQueryView(APIView):
             'Tags (TextField). '
             'Send the response in the following JSON format - { query: <Query>}'
         )
-
-    def get(self, request, *args, **kwargs):
+    
+    def get(self, request, *args, **kwargs):      
+        
         query_params = request.query_params
 
         if not query_params:
