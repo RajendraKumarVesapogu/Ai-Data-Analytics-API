@@ -1,18 +1,19 @@
-# segwise-intern-assignment
 
 
-# Game Analytics API
+# LLM powered Data Analytics API
 
-This assignment/project is a Django-based REST API for game analytics. It allows users to upload CSV data containing game information and query this data using various filters and aggregations.
+This Django-based REST API for game analytics allows users to upload CSV data containing game information and query this data using various filters and aggregations. In addition to this this API also allows the user to send custom prompts(In English) and get the desired results.
+
+The API is deployed on AWS EC2 instance. Link: http://52.66.44.9/api 
 
 ## Table of Contents
 
 1. [Installation](#installation)
-2. [Project Structure](#project-structure)
-3. [API Endpoints](#api-endpoints)
-4. [Authentication](#authentication)
-5. [Docker Deployment](#docker-deployment)
-6. [Usage Examples](#usage-examples)
+2. [API Endpoints](#api-endpoints)
+3. [Authentication](#authentication)
+4. [Docker Deployment](#docker-deployment)
+5. [Usage Examples](#usage-examples)
+6. [UI Demo](#demo)
 
 ## Installation
 
@@ -25,8 +26,7 @@ This assignment/project is a Django-based REST API for game analytics. It allows
 2. Create a virtual environment and activate it:
    ```
    python -m venv .venv
-   # On linux, use, `source .venv/bin/activate`
-   # On Windows, use `.venv\Scripts\activate`
+   source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
    ```
 
 3. Install the required packages:
@@ -35,8 +35,10 @@ This assignment/project is a Django-based REST API for game analytics. It allows
    ```
 
 4. Set up the database:
+
    ```
-   python manage.py migrate
+   python manage.py migrate --run-syncdb
+
    ```
 
 5. Create a superuser (for admin access):
@@ -51,126 +53,123 @@ This assignment/project is a Django-based REST API for game analytics. It allows
 
 The API should now be accessible at `http://localhost:8000/`.
 
-## Project Structure
-```
-game_analytics_api/  # Main Django app
-├── game_analytics/
-    ├── migrations/
-    ├── __init__.py
-    ├── admin.py
-    ├── apps.py
-    ├── models.py       # Contains GameData model
-    ├── serializers.py  # Contains GameDataSerializer
-    ├── views.py         # Contains API views
-    └── urls.py         # URL configurations for the app
 
-game_analytics_project/  # Project configuration
-├── __init__.py
-├── asgi.py
-├── settings.py
-├── urls.py
-└── wsgi.py
-
-templates/  # HTML templates (if any)
-
-static/     # Static files (CSS, JS, etc.)
-
-manage.py
-requirements.txt
-Dockerfile
-docker-compose.yml
-README.md
-```
 ## API Endpoints
 
-### 1. CSV Upload
-- **URL:** `/api/upload/`
-- **Method:** POST
-- **Auth Required:** Yes
-- **Data Params:** 
-  ```json
-  {
-    "csv_url": "[url to CSV file]"
-  }
-  ```
-- **Success Response:** 
-  - Code: 201
-  - Content: `{"message": "CSV data uploaded successfully"}`
+### Authentication Endpoints
 
-### 2. Data Query
-- **URL:** `/api/query/`
-- **Method:** GET
-- **Auth Required:** Yes
-- **URL Params:** 
-  - Any field from the GameData model (e.g., `Name`, `Price`, `Release_date`)
-  - `aggregations`: Comma-separated list of aggregate functions (avg, max, min, sum)
-  - `agg_field`: Field to apply aggregations to
-- **Success Response:** 
-  - Code: 200
-  - Content: List of matching GameData objects or aggregation results
+1. **User Registration**
+   - URL: `http://52.66.44.9/api/register/`
+   - Method: POST
+
+2. **User Login**
+   - URL: `http://52.66.44.9/api/login/`
+   - Method: POST
+
+3. **User Logout**
+   - URL: `http://52.66.44.9/api/logout/`
+   - Method: POST
+
+4. **Test Token**
+   - URL: `http://52.66.44.9/api/test_token/`
+   - Method: GET
+
+
+### Data Analytics Endpoints
+
+6. **Upload CSV**
+   - URL: `http://52.66.44.9/api/upload/`
+   - Method: POST
+
+7. **Game Data Query**
+   - URL: `http://52.66.44.9/api/query/`
+   - Method: GET
+
+8. **Custom Game Data Query**
+   - URL: `http://52.66.44.9/api/query/`
+   - Method: POST
 
 ## Authentication
 
-This API uses JWT (JSON Web Token) authentication. To authenticate:
+This API uses Token authentication. To authenticate:
 
-1. Obtain a token:
-   - **URL:** `/api/token/`
-   - **Method:** POST
-   - **Data Params:** 
-     ```json
-     {
-       "username": "[valid username]",
-       "password": "[valid password]"
-     }
-     ```
-   - **Success Response:**
-     - Code: 200
-     - Content: `{"access":"[access_token]","refresh":"[refresh_token]"}`
-
-2. Use the access token in the Authorization header for subsequent requests:
+1. Register a new user or login to receive a token.
+2. Include the token in the Authorization header for subsequent requests:
    ```
-   Authorization: Bearer [access_token]
+   Authorization: Token <your_token>
    ```
 
 ## Docker Deployment
 
-1. Build the Docker image:
+To deploy using Docker:
+
+1. Build and run the services:
    ```
-   docker-compose build
+   docker-compose up --build
    ```
 
-2. Run the Docker container:
+2. To run in the background:
    ```
-   docker-compose up
+   docker-compose up -d
    ```
 
-The API will be available at `http://localhost:8000/`.
+3. To stop the services:
+   ```
+   docker-compose down
+   ```
 
 ## Usage Examples
 
-1. Upload CSV data:
+1. Register a new user:
    ```
-   curl -X POST -H "Authorization: Bearer [your_token]" -H "Content-Type: application/json" -d '{"csv_url":"https://example.com/game_data.csv"}' http://localhost:8000/api/upload/
-   ```
-
-2. Query data:
-   ```
-   curl -H "Authorization: Bearer [your_token]" "http://localhost:8000/api/query/?Name=Half-Life&Price=9.99"
+   curl -X POST http://localhost:8000/register/ -H "Content-Type: application/json" -d '{"username":"newuser", "password":"newpassword"}'
    ```
 
-3. Aggregate query:
+2. Login and get token:
    ```
-   curl -H "Authorization: Bearer [your_token]" "http://localhost:8000/api/query/?aggregations=avg,max&agg_field=Price"
+   curl -X POST http://localhost:8000/login/ -H "Content-Type: application/json" -d '{"username":"newuser", "password":"newpassword"}'
    ```
 
-## Additional Notes
+3. Upload CSV data:
+   ```
+   curl -X POST -H "Authorization: Token <your_token>" -H "Content-Type: application/json" -d '{"url":"https://example.com/game_data.csv"}' http://localhost:8000/upload/
+   ```
 
-- Ensure that your CSV file structure matches the fields in the GameData model.
-- For large datasets, consider implementing pagination in the query endpoint.
-- The project uses SQLite by default. For production, consider switching to a more robust database like PostgreSQL.
-- Always keep your secret key and sensitive information secure and out of version control.
+4. Query game data:
+   ```
+   curl -H "Authorization: Token <your_token>" "http://localhost:8000/query/?field=Name&value=Half-Life"
+   ```
 
-For any issues or feature requests, please open an issue in the GitHub repository.
-```
+5. Custom game data query:
+   ```
+   curl -X POST -H "Authorization: Token <your_token>" -H "Content-Type: application/json" -d '{"prompt":"Show me all games released after 2020"}' http://localhost:8000/query/
+   ```
+## Demo
 
-This README provides a comprehensive guide to your project, including setup instructions, project structure, API documentation, and usage examples. You may want to adjust some details based on your specific implementation or add more sections as needed.
+Clone the frontend repository https://github.com/RajendraKumarVesapogu/segwise-intern-assignment-frontend.git
+
+or
+[Watch the video](https://youtu.be/XH_utAJ2Mx4)
+<video controls src="2024-07-07 06-52-13.mp4" title="Title"></video>
+## Example Screenshots
+
+**User Registration**
+![alt text](image.png)
+
+**User Login**
+![alt text](image-1.png)
+
+**Upload CSV**
+CSV link used for testing: https://image-fridayyai.s3.amazonaws.com/Rajendra+/85/temp.csv
+![alt text](image-2.png)
+
+**Query-GET**
+![alt text](image-3.png)
+
+
+**Query-Prompt**
+![alt text](image-4.png)
+
+For any issues or feature requests, please open an issue in the [GitHub repository](https://github.com/RajendraKumarVesapogu/segwise-intern-assignment).
+
+or contact me rajendrakumarvesapogu@gmail.com
