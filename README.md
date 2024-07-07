@@ -6,7 +6,7 @@ This Django-based REST API for game analytics allows users to upload CSV data co
 
 The API is deployed on AWS EC2 instance. Link: http://52.66.44.9/api 
 
-The UI of this project is deployed at Link: https://segwise-intern-assignment-frontend.vercel.app/home
+The UI of this project is deployed at Link: https://segwise-intern-assignment-frontend.vercel.app
 
 Note: The above link works only if you add the url link to the Allow Insecure Content sites of the browser
 Example shown below
