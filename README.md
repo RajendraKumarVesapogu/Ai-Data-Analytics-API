@@ -150,25 +150,25 @@ Clone the frontend repository https://github.com/RajendraKumarVesapogu/segwise-i
 
 or
 [Watch the video](https://youtu.be/XH_utAJ2Mx4)
-<video controls src="2024-07-07 06-52-13.mp4" title="Title"></video>
+<video controls src="readme-assets/2024-07-07 06-52-13.mp4" title="Title"></video>
 ## Example Screenshots
 
 **User Registration**
-![alt text](image.png)
+![alt text](readme-assets/image.png)
 
 **User Login**
-![alt text](image-1.png)
+![alt text](readme-assets/image-1.png)
 
 **Upload CSV**
 CSV link used for testing: https://image-fridayyai.s3.amazonaws.com/Rajendra+/85/temp.csv
-![alt text](image-2.png)
+![alt text](readme-assets/image-2.png)
 
 **Query-GET**
-![alt text](image-3.png)
+![alt text](readme-assets/image-3.png)
 
 
 **Query-Prompt**
-![alt text](image-4.png)
+![alt text](readme-assets/image-4.png)
 
 For any issues or feature requests, please open an issue in the [GitHub repository](https://github.com/RajendraKumarVesapogu/segwise-intern-assignment).
 
