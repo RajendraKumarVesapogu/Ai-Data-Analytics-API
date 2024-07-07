@@ -20,6 +20,7 @@ Example shown below
 4. [Docker Deployment](#docker-deployment)
 5. [Usage Examples](#usage-examples)
 6. [UI Demo](#demo)
+7. [Example Query Screenshots](#example-screenshots)
 
 ## Installation
 
