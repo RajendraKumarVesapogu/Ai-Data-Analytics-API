@@ -108,6 +108,8 @@ This API uses Token authentication. To authenticate:
 
 ## Docker Deployment
 
+Createed two docker images ( one with nginx and one without ) and pushed into the docker hub.
+
 To deploy using Docker:
 
 1. Build and run the services:
