@@ -5,6 +5,7 @@
 This Django-based REST API for game analytics allows users to upload CSV data containing game information and query this data using various filters and aggregations. In addition to this this API also allows the user to send custom prompts(In English) and get the desired results.
 
 The API is deployed on AWS EC2 instance. Link: http://52.66.44.9/api 
+*Edit* Due to lack of credits the instance has been terminated
 
 Note: The above link works only if you add the url link to the Allow Insecure Content sites of the browser
 Example shown below
